@@ -1,21 +1,19 @@
-# tasks to complete before running roles
+### TASKS TO COMPLETE BEFORE RUNNING ROLES ###
+
 - hosts: all
   tags: always
   become: true
   pre_tasks:
-    - name: pre-run | update package cache (arch)
-      tags: always
-      pacman: update_cache=yes
-      changed_when: False
-      when: ansible_distribution == "Archlinux"
 
-    - name: pre-run | update package cache (debian, etc)
+    - name: pre-run | update package cache (apt)
       tags: always
-      apt: update_cache=yes
-      changed_when: False
-      when: ansible_distribution in ["Debian", "Ubuntu"]
+      ansible.builtin.apt: 
+      update_cache: yes
+      changed_when: false
+      when: ansible_distribution in ["Debian", "Pop!_OS", "Ubuntu"]
 
-# run roles
+### RUN ROLES ###
+
 - hosts: all
   tags: base
   become: true
@@ -34,18 +32,19 @@
   roles:
     - server
 
-# end of run cleanup and reporting
+### END OF RUN CLEANUP AND REPORTING ###
+
 - hosts: all
   become: true
   tasks:
-  - name: cleanup package cache (debian and ubuntu)
+  - name: cleanup package cache (apt)
     tags: always
     apt:
       autoclean: yes
     changed_when: false
     when: ansible_distribution in ["Debian", "Pop!_OS", "Ubuntu"]
 
-  - name: autoremove orphan packages (debian and ubuntu)
+  - name: autoremove orphan packages (apt)
     tags: always
     apt:
       autoremove: yes
@@ -64,3 +63,5 @@
     when:
       - task_failed is defined
       - task_failed == true
+
+### EOF ###
